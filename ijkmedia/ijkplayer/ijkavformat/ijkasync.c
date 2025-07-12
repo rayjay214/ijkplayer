@@ -535,7 +535,7 @@ static const AVOption options[] = {
         OFFSET(forwards_capacity),  AV_OPT_TYPE_INT64, {.i64 = 128 * 1024}, 128 * 1024, 128 * 1024 * 1024, D },
     { "async-backwards-capacity",   "max bytes that may be seek backward without seeking in inner protocol",
         OFFSET(backwards_capacity), AV_OPT_TYPE_INT64, {.i64 = 128 * 1024}, 128 * 1024, 128 * 1024 * 1024, D },
-    { "ijkapplication", "AVApplicationContext", OFFSET(app_ctx_intptr), AV_OPT_TYPE_INT64, { .i64 = 0 }, INT64_MIN, INT64_MAX, .flags = D },
+    { "ijkapplication", "AVApplicationContext", OFFSET(app_ctx_intptr), AV_OPT_TYPE_INT64, { .i64 = 0 }, (double)INT64_MIN, (double)INT64_MAX, .flags = D },
     {NULL},
 };
 

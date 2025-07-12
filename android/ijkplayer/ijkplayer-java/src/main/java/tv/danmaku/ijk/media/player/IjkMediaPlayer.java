@@ -634,6 +634,8 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
         }
     }
 
+
+
     @SuppressLint("Wakelock")
     private void stayAwake(boolean awake) {
         if (mWakeLock != null) {
@@ -971,6 +973,20 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
         }
         return mediaInfo;
     }
+    public int startRecord(String recordVideoPath){
+        return _startRecord(recordVideoPath);
+    }
+    public int stopRecord(){
+        return _stopRecord();
+    }
+
+    public int isRecord(){
+        return _isRecord();
+    }
+    private native int _startRecord(String recordVideoPath);
+    private native int _stopRecord();
+
+    private native int _isRecord();
 
     @Override
     public void setLogEnabled(boolean enable) {

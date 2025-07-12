@@ -417,7 +417,7 @@ fail:
 static const AVOption ijktcphook_options[] = {
     { "ijktcphook-test-fail-point",     "test fail point, in bytes",
         OFFSET(test_fail_point),        AV_OPT_TYPE_INT,   {.i64 = 0}, 0,         INT_MAX, D },
-    { "ijkapplication", "AVApplicationContext", OFFSET(app_ctx_intptr), AV_OPT_TYPE_INT64, { .i64 = 0 }, INT64_MIN, INT64_MAX, .flags = D },
+    { "ijkapplication", "AVApplicationContext", OFFSET(app_ctx_intptr), AV_OPT_TYPE_INT64, { .i64 = 0 }, (double)INT64_MIN, (double)INT64_MAX, .flags = D },
 
     { NULL }
 };
@@ -427,7 +427,7 @@ static const AVOption ijkhttphook_options[] = {
         OFFSET(segment_index),          AV_OPT_TYPE_INT,   {.i64 = 0}, 0,         INT_MAX, D },
     { "ijkhttphook-test-fail-point",    "test fail point, in bytes",
         OFFSET(test_fail_point),        AV_OPT_TYPE_INT,   {.i64 = 0}, 0,         INT_MAX, D },
-    { "ijkapplication", "AVApplicationContext", OFFSET(app_ctx_intptr), AV_OPT_TYPE_INT64, { .i64 = 0 }, INT64_MIN, INT64_MAX, .flags = D },
+    { "ijkapplication", "AVApplicationContext", OFFSET(app_ctx_intptr), AV_OPT_TYPE_INT64, { .i64 = 0 }, (double)INT64_MIN, (double)INT64_MAX, .flags = D },
 
     { NULL }
 };

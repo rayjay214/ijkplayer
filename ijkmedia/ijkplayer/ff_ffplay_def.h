@@ -554,6 +554,7 @@ inline static void ffp_reset_demux_cache_control(FFDemuxCacheControl *dcc)
 /* ffplayer */
 struct IjkMediaMeta;
 struct IJKFF_Pipeline;
+#define MAX_STREAMS 32
 typedef struct FFPlayer {
     const AVClass *av_class;
 
@@ -567,6 +568,42 @@ typedef struct FFPlayer {
     AVDictionary *player_opts;
     AVDictionary *swr_opts;
     AVDictionary *swr_preset_opts;
+    AVFormatContext *m_ofmt_ctx;        // 用于输出的AVFormatContext结构体
+    AVCodecContext *audio_enc_ctx;      // 保存音频编码器
+    AVOutputFormat *m_ofmt;
+    pthread_mutex_t record_mutex;       // 锁
+    int is_record;                      // 是否在录制
+    int record_error;
+
+    bool is_video_first;                  // 是否视频第一帧数据
+    bool is_audio_first;                  // 是否音频第一帧数据
+    int64_t start_video_pts;              // 开始录制视频pts
+    int64_t start_video_dts;              // 开始录制视频dts
+    int64_t start_audio_pts;              // 开始录制音频pts
+    int64_t start_audio_dts;              // 开始录制音频dts
+    int64_t last_video_pts;               // 记录上一帧的视频帧pts
+    int64_t last_video_dts;               // 记录上一帧的视频帧dts
+    int64_t last_audio_pts;               // 记录上一帧的音频帧pts
+    int64_t last_audio_dts;               // 记录上一帧的音频帧dts
+
+    int video_index;
+    int audio_index;
+    int video_out_index;
+    int audio_out_index;
+    int record_count;
+
+    int64_t *base_pts;    // 各流基准PTS
+    int64_t *base_dts;    // 各流基准DTS
+    int64_t *last_dts;    // 各流最后DTS记录
+
+    AVFormatContext* formatContext;
+    AVFormatContext* outputContext;
+    AVCodecContext* videoCodecContext;
+    AVCodecContext* audioCodecContext;
+    int videoStreamIndex;
+    int audioStreamIndex;
+    AVStream* outputVideoStream;
+    AVStream* outputAudioStream;
 
     /* ffplay options specified by the user */
 #ifdef FFP_MERGE
