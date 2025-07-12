@@ -662,8 +662,8 @@ static int decoder_decode_frame(FFPlayer *ffp, Decoder *d, AVFrame *frame, AVSub
             } else {
                 int result = avcodec_send_packet(d->avctx, &pkt);
 
-                //Â¼ÖÆÁ÷³Ì
-                if (ffp->is_record) { // ¿ÉÒÔÂ¼ÖÆÊ±£¬Ð´ÈëÎÄ¼þ
+                //å½•åˆ¶æµç¨‹
+                if (ffp->is_record) { // å¯ä»¥å½•åˆ¶æ—¶ï¼Œå†™å…¥æ–‡ä»¶
                     if (0 != ffp_record_file(ffp, &pkt)) {
                         ffp->record_error = 1;
                         ffp_stop_record(ffp);
@@ -5181,20 +5181,20 @@ void ffp_set_property_int64(FFPlayer *ffp, int id, int64_t value)
 void print_audio_codecs() {
     const AVCodec *codec = NULL;
     void *opaque = NULL;
-    av_log(NULL, AV_LOG_INFO, "=== ÒôÆµ±àÂëÆ÷ºÍ½âÂëÆ÷ÁÐ±í ===\n");
+    av_log(NULL, AV_LOG_INFO, "=== éŸ³é¢‘ç¼–ç å™¨å’Œè§£ç å™¨åˆ—è¡¨ ===\n");
     while ((codec = av_codec_iterate(&opaque))) {
         if (codec->type == AVMEDIA_TYPE_AUDIO) {
             if (av_codec_is_encoder(codec)) {
-                av_log(NULL, AV_LOG_INFO, "±àÂëÆ÷: %s (%s)\n", codec->name, codec->long_name ? codec->long_name : "unknown");
+                av_log(NULL, AV_LOG_INFO, "ç¼–ç å™¨: %s (%s)\n", codec->name, codec->long_name ? codec->long_name : "unknown");
             }
             if (av_codec_is_decoder(codec)) {
-                av_log(NULL, AV_LOG_INFO, "½âÂëÆ÷: %s (%s)\n", codec->name, codec->long_name ? codec->long_name : "unknown");
+                av_log(NULL, AV_LOG_INFO, "è§£ç å™¨: %s (%s)\n", codec->name, codec->long_name ? codec->long_name : "unknown");
             }
         }
     }
 }
 
-//¿ªÊ¼Â¼ÖÆº¯Êý:file_nameÊÇ±£´æÂ·¾¶
+//å¼€å§‹å½•åˆ¶å‡½æ•°:file_nameæ˜¯ä¿å­˜è·¯å¾„
 int ffp_start_record(FFPlayer *ffp, const char *file_name)
 {
     assert(ffp);
@@ -5212,22 +5212,22 @@ int ffp_start_record(FFPlayer *ffp, const char *file_name)
     ffp->last_audio_pts = 0;
     ffp->last_audio_dts = 0;
 
-    if (!file_name || !strlen(file_name)) { // Ã»ÓÐÂ·¾¶
+    if (!file_name || !strlen(file_name)) { // æ²¡æœ‰è·¯å¾„
         av_log(ffp, AV_LOG_ERROR, "filename is invalid");
         goto end;
     }
 
-    if (!is || !is->ic|| is->paused || is->abort_request) { // Ã»ÓÐÉÏÏÂÎÄ£¬»òÕßÉÏÏÂÎÄÒÑ¾­Í£Ö¹
+    if (!is || !is->ic|| is->paused || is->abort_request) { // æ²¡æœ‰ä¸Šä¸‹æ–‡ï¼Œæˆ–è€…ä¸Šä¸‹æ–‡å·²ç»åœæ­¢
         av_log(ffp, AV_LOG_ERROR, "is,is->ic,is->paused is invalid");
         goto end;
     }
 
-    if (ffp->is_record) { // ÒÑ¾­ÔÚÂ¼ÖÆ
+    if (ffp->is_record) { // å·²ç»åœ¨å½•åˆ¶
         av_log(ffp, AV_LOG_ERROR, "recording has started");
         goto end;
     }
 
-    // ³õÊ¼»¯Ò»¸öÓÃÓÚÊä³öµÄAVFormatContext½á¹¹Ìå
+    // åˆå§‹åŒ–ä¸€ä¸ªç”¨äºŽè¾“å‡ºçš„AVFormatContextç»“æž„ä½“
     avformat_alloc_output_context2(&ffp->m_ofmt_ctx, NULL, NULL, file_name);
     if (!ffp->m_ofmt_ctx) {
         av_log(ffp, AV_LOG_ERROR, "Could not create output context filename is %s\n", file_name);
@@ -5236,7 +5236,7 @@ int ffp_start_record(FFPlayer *ffp, const char *file_name)
     ffp->m_ofmt = ffp->m_ofmt_ctx->oformat;
 
     for (int i = 0; i < is->ic->nb_streams; i++) {
-        // ¶ÔÕÕÊäÈëÁ÷´´½¨Êä³öÁ÷Í¨µÀ
+        // å¯¹ç…§è¾“å…¥æµåˆ›å»ºè¾“å‡ºæµé€šé“
         AVStream *in_stream = is->ic->streams[i];
         AVStream *out_stream = avformat_new_stream(ffp->m_ofmt_ctx, in_stream->codec->codec);
         if (!out_stream) {
@@ -5244,8 +5244,8 @@ int ffp_start_record(FFPlayer *ffp, const char *file_name)
             goto end;
         }
 
-        // ½«ÊäÈëÊÓÆµ/ÒôÆµµÄ²ÎÊý¿½±´ÖÁÊä³öÊÓÆµ/ÒôÆµµÄAVCodecContext½á¹¹Ìå
-        av_log(ffp, AV_LOG_DEBUG, "in_stream->codec£»%p\n", in_stream->codec);
+        // å°†è¾“å…¥è§†é¢‘/éŸ³é¢‘çš„å‚æ•°æ‹·è´è‡³è¾“å‡ºè§†é¢‘/éŸ³é¢‘çš„AVCodecContextç»“æž„ä½“
+        av_log(ffp, AV_LOG_DEBUG, "in_stream->codecï¼›%p\n", in_stream->codec);
         if (avcodec_copy_context(out_stream->codec, in_stream->codec) < 0) {
             av_log(ffp, AV_LOG_ERROR, "Failed to copy context from input to output stream codec context\n");
             goto end;
@@ -5259,7 +5259,7 @@ int ffp_start_record(FFPlayer *ffp, const char *file_name)
 
     av_dump_format(ffp->m_ofmt_ctx, 0, file_name, 1);
 
-    // ´ò¿ªÊä³öÎÄ¼þ
+    // æ‰“å¼€è¾“å‡ºæ–‡ä»¶
     if (!(ffp->m_ofmt->flags & AVFMT_NOFILE)) {
         if (avio_open(&ffp->m_ofmt_ctx->pb, file_name, AVIO_FLAG_WRITE) < 0) {
             av_log(ffp, AV_LOG_ERROR, "Could not open output file '%s'", file_name);
@@ -5267,7 +5267,7 @@ int ffp_start_record(FFPlayer *ffp, const char *file_name)
         }
     }
 
-    // Ð´ÊÓÆµÎÄ¼þÍ·
+    // å†™è§†é¢‘æ–‡ä»¶å¤´
     if (avformat_write_header(ffp->m_ofmt_ctx, NULL) < 0) {
         av_log(ffp, AV_LOG_ERROR, "Error occurred when opening output file\n");
         goto end;
@@ -5283,7 +5283,7 @@ int ffp_start_record(FFPlayer *ffp, const char *file_name)
     return -1;
 }
 
-//Í£Ö¹Â¼²¥
+//åœæ­¢å½•æ’­
 int ffp_stop_record(FFPlayer *ffp)
 {
     assert(ffp);
@@ -5314,7 +5314,7 @@ int ffp_record_file(FFPlayer *ffp, AVPacket *packet)
     assert(ffp);
     VideoState *is = ffp->is;
     int ret = 0;
-    bool pktCanWrite = true;// ¼ÇÂ¼ÒôÆµÖ¡ÊÇ·ñ¿ÉÒÔÐ´Èë
+    bool pktCanWrite = true;// è®°å½•éŸ³é¢‘å¸§æ˜¯å¦å¯ä»¥å†™å…¥
     AVStream *in_stream;
     AVStream *out_stream;
 
@@ -5324,51 +5324,51 @@ int ffp_record_file(FFPlayer *ffp, AVPacket *packet)
             av_log(ffp, AV_LOG_ERROR, "packet == NULL");
             return -1;
         }
-        // ¼ì²é m_ofmt_ctx ºÍ is->ic ÊÇ·ñÒÑ³õÊ¼»¯
+        // æ£€æŸ¥ m_ofmt_ctx å’Œ is->ic æ˜¯å¦å·²åˆå§‹åŒ–
         if (!ffp->m_ofmt_ctx || !is->ic) {
             av_log(ffp, AV_LOG_ERROR, "m_ofmt_ctx or is->ic is not initialized\n");
             return -1;
         }
 
-        // ¼ì²é streams ÊÇ·ñÓÐÐ§
+        // æ£€æŸ¥ streams æ˜¯å¦æœ‰æ•ˆ
         if (!is->ic->streams || !ffp->m_ofmt_ctx->streams) {
             av_log(ffp, AV_LOG_ERROR, "streams is NULL\n");
             return -1;
         }
 
-        AVPacket *pkt = av_packet_clone(packet);// Óë¿´Ö±²¥µÄ AVPacket·Ö¿ª£¬²»È»¿¨ÆÁ
+        AVPacket *pkt = av_packet_clone(packet);// ä¸Žçœ‹ç›´æ’­çš„ AVPacketåˆ†å¼€ï¼Œä¸ç„¶å¡å±
         if (!pkt) {
             av_log(ffp, AV_LOG_ERROR, "pkt is null\n");
             return -1;
         }
 
-        // ÅÐ¶ÏÔ½½ç¹ýÂË
+        // åˆ¤æ–­è¶Šç•Œè¿‡æ»¤
         if (pkt->stream_index < 0 || pkt->stream_index >= is->ic->nb_streams || pkt->stream_index >= ffp->m_ofmt_ctx->nb_streams) {
-            av_log(ffp, AV_LOG_ERROR, "pkt->stream_index ÒÑÔ½½ç\n");
+            av_log(ffp, AV_LOG_ERROR, "pkt->stream_index å·²è¶Šç•Œ\n");
             av_packet_free(&pkt);
             return 0;
         }
 
         pthread_mutex_lock(&ffp->record_mutex);
         if (is->ic->streams[pkt->stream_index]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            if (ffp->is_video_first) { // Â¼ÖÆµÄµÚÒ»Ö¡£¬Ê±¼ä´Ó0¿ªÊ¼
+            if (ffp->is_video_first) { // å½•åˆ¶çš„ç¬¬ä¸€å¸§ï¼Œæ—¶é—´ä»Ž0å¼€å§‹
                 ffp->is_video_first = false;
                 ffp->start_video_pts = pkt->pts;
                 ffp->start_video_dts = pkt->dts;
                 pkt->pts = 0;
                 pkt->dts = 0;
-            } else { // Ö®ºóµÄÃ¿Ò»Ö¡¶¼Òª¼õÈ¥£¬µã»÷¿ªÊ¼Â¼ÖÆÊ±µÄÖµ£¬ÕâÑùµÄÊ±¼ä²ÅÊÇÕýÈ·µÄ
+            } else { // ä¹‹åŽçš„æ¯ä¸€å¸§éƒ½è¦å‡åŽ»ï¼Œç‚¹å‡»å¼€å§‹å½•åˆ¶æ—¶çš„å€¼ï¼Œè¿™æ ·çš„æ—¶é—´æ‰æ˜¯æ­£ç¡®çš„
                 pkt->pts = llabs(pkt->pts - ffp->start_video_pts);
                 pkt->dts = llabs(pkt->dts - ffp->start_video_dts);
             }
         } else if (is->ic->streams[pkt->stream_index]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-            if (ffp->is_audio_first) { // Â¼ÖÆµÄµÚÒ»Ö¡£¬Ê±¼ä´Ó0¿ªÊ¼
+            if (ffp->is_audio_first) { // å½•åˆ¶çš„ç¬¬ä¸€å¸§ï¼Œæ—¶é—´ä»Ž0å¼€å§‹
                 ffp->is_audio_first = false;
                 ffp->start_audio_pts = pkt->pts;
                 ffp->start_audio_dts = pkt->dts;
                 pkt->pts = 0;
                 pkt->dts = 0;
-            } else { // Ö®ºóµÄÃ¿Ò»Ö¡¶¼Òª¼õÈ¥£¬µã»÷¿ªÊ¼Â¼ÖÆÊ±µÄÖµ£¬ÕâÑùµÄÊ±¼ä²ÅÊÇÕýÈ·µÄ
+            } else { // ä¹‹åŽçš„æ¯ä¸€å¸§éƒ½è¦å‡åŽ»ï¼Œç‚¹å‡»å¼€å§‹å½•åˆ¶æ—¶çš„å€¼ï¼Œè¿™æ ·çš„æ—¶é—´æ‰æ˜¯æ­£ç¡®çš„
                 pkt->pts = llabs(pkt->pts - ffp->start_audio_pts);
                 pkt->dts = llabs(pkt->dts - ffp->start_audio_dts);
             }
@@ -5377,7 +5377,7 @@ int ffp_record_file(FFPlayer *ffp, AVPacket *packet)
         in_stream  = is->ic->streams[pkt->stream_index];
         out_stream = ffp->m_ofmt_ctx->streams[pkt->stream_index];
 
-        // ×ª»»PTS/DTS
+        // è½¬æ¢PTS/DTS
         pkt->pts = av_rescale_q_rnd(pkt->pts, in_stream->time_base, out_stream->time_base, (AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
         pkt->dts = av_rescale_q_rnd(pkt->dts, in_stream->time_base, out_stream->time_base, (AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
         pkt->duration = av_rescale_q(pkt->duration, in_stream->time_base, out_stream->time_base);
@@ -5386,26 +5386,26 @@ int ffp_record_file(FFPlayer *ffp, AVPacket *packet)
         if (is->ic->streams[pkt->stream_index]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             if (pkt->pts <= ffp->last_video_pts || pkt->dts <= ffp->last_video_dts) {
                 pktCanWrite = false;
-                av_log(ffp, AV_LOG_WARNING, "¶ªÆúÒì³£ÊÓÆµÖ¡: µ±Ç° dts=%"PRId64", ÉÏÒ»Ö¡ dts=%"PRId64"\n", pkt->dts, ffp->last_video_dts);
+                av_log(ffp, AV_LOG_WARNING, "ä¸¢å¼ƒå¼‚å¸¸è§†é¢‘å¸§: å½“å‰ dts=%"PRId64", ä¸Šä¸€å¸§ dts=%"PRId64"\n", pkt->dts, ffp->last_video_dts);
             } else {
                 pktCanWrite = true;
                 ffp->last_video_pts = pkt->pts;
                 ffp->last_video_dts = pkt->dts;
-                av_log(ffp, AV_LOG_INFO, "µ±Ç°Ð´ÈëÊÓÆµÖ¡: pts=%"PRId64" dts=%"PRId64" duration=%"PRId64"" , pkt->pts, pkt->dts, pkt->duration);
+                av_log(ffp, AV_LOG_INFO, "å½“å‰å†™å…¥è§†é¢‘å¸§: pts=%"PRId64" dts=%"PRId64" duration=%"PRId64"" , pkt->pts, pkt->dts, pkt->duration);
             }
         } else if (is->ic->streams[pkt->stream_index]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (pkt->pts <= ffp->last_audio_pts || pkt->dts <= ffp->last_audio_dts) {
                 pktCanWrite = false;
-                av_log(ffp, AV_LOG_WARNING, "¶ªÆúÒì³£ÒôÆµÖ¡: µ±Ç° dts=%"PRId64", ÉÏÒ»Ö¡ dts=%"PRId64"\n", pkt->dts, ffp->last_audio_dts);
+                av_log(ffp, AV_LOG_WARNING, "ä¸¢å¼ƒå¼‚å¸¸éŸ³é¢‘å¸§: å½“å‰ dts=%"PRId64", ä¸Šä¸€å¸§ dts=%"PRId64"\n", pkt->dts, ffp->last_audio_dts);
             } else {
                 pktCanWrite = true;
                 ffp->last_audio_pts = pkt->pts;
                 ffp->last_audio_dts = pkt->dts;
-                av_log(ffp, AV_LOG_INFO, "µ±Ç°Ð´ÈëÒôÆµÖ¡: pts=%"PRId64" dts=%"PRId64" duration=%"PRId64"" , pkt->pts, pkt->dts, pkt->duration);
+                av_log(ffp, AV_LOG_INFO, "å½“å‰å†™å…¥éŸ³é¢‘å¸§: pts=%"PRId64" dts=%"PRId64" duration=%"PRId64"" , pkt->pts, pkt->dts, pkt->duration);
             }
         }
 
-        // Èç¹û¿ÉÒÔÐ´Èë,Ð´ÈëÒ»¸öAVPacketµ½Êä³öÎÄ¼þ
+        // å¦‚æžœå¯ä»¥å†™å…¥,å†™å…¥ä¸€ä¸ªAVPacketåˆ°è¾“å‡ºæ–‡ä»¶
         if (pktCanWrite) {
             if ((ret = av_interleaved_write_frame(ffp->m_ofmt_ctx, pkt)) < 0) {
                 av_log(ffp, AV_LOG_ERROR, "Error muxing packet\n");
@@ -5418,7 +5418,7 @@ int ffp_record_file(FFPlayer *ffp, AVPacket *packet)
 }
 
 
-//ÊÇ·ñÕýÔÚÂ¼ÖÆ
+//æ˜¯å¦æ­£åœ¨å½•åˆ¶
 int ffp_is_record(FFPlayer *ffp){
     return ffp->is_record;
 }

@@ -849,10 +849,10 @@ int ijkmp_start_record(IjkMediaPlayer *mp,const char *file_name)
 {
     pthread_mutex_lock(&mp->mutex);
     assert(mp);
-    printf("=====¿ªÊ¼Â¼ÖÆ×¼±¸=====");
+    printf("=====å¼€å§‹å½•åˆ¶å‡†å¤‡=====");
     MPTRACE("ijkmp_startRecord()\n");
     int retval = ffp_start_record(mp->ffplayer,file_name);
-    printf("=====¿ªÊ¼Â¼ÖÆÒÑµ÷ÓÃ=====\n");
+    printf("=====å¼€å§‹å½•åˆ¶å·²è°ƒç”¨=====\n");
     MPTRACE("ijkmp_startRecord()=%d\n", retval);
     pthread_mutex_unlock(&mp->mutex);
     return retval;
@@ -863,9 +863,9 @@ int ijkmp_stop_record(IjkMediaPlayer *mp)
     pthread_mutex_lock(&mp->mutex);
     assert(mp);
     MPTRACE("ijkmp_stopRecord()\n");
-    printf("=====½áÊøÂ¼ÖÆ×¼±¸=====\n");
+    printf("=====ç»“æŸå½•åˆ¶å‡†å¤‡=====\n");
     int retval = ffp_stop_record(mp->ffplayer);
-    printf("=====½áÊøÂ¼ÖÆÒÑµ÷ÓÃ=====\n");
+    printf("=====ç»“æŸå½•åˆ¶å·²è°ƒç”¨=====\n");
     MPTRACE("ijkmp_stopRecord()=%d\n", retval);
     pthread_mutex_unlock(&mp->mutex);
     return retval;

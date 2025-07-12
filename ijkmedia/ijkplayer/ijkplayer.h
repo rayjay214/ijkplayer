@@ -215,7 +215,7 @@ void           *ijkmp_get_weak_thiz(IjkMediaPlayer *mp);
 void           *ijkmp_set_weak_thiz(IjkMediaPlayer *mp, void *weak_thiz);
 
 void            ijkmp_take_snapshot(IjkMediaPlayer *mp);
-//录制方法
+//褰曞埗鏂规硶
 int             ijkmp_start_record(IjkMediaPlayer *mp,const char *file_name);
 int             ijkmp_stop_record(IjkMediaPlayer *mp);
 int             ijkmp_is_record(IjkMediaPlayer *mp);

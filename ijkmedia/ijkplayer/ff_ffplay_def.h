@@ -568,23 +568,23 @@ typedef struct FFPlayer {
     AVDictionary *player_opts;
     AVDictionary *swr_opts;
     AVDictionary *swr_preset_opts;
-    AVFormatContext *m_ofmt_ctx;        // ÓÃÓÚÊä³öµÄAVFormatContext½á¹¹Ìå
-    AVCodecContext *audio_enc_ctx;      // ±£´æÒôÆµ±àÂëÆ÷
+    AVFormatContext *m_ofmt_ctx;        // ç”¨äºè¾“å‡ºçš„AVFormatContextç»“æ„ä½“
+    AVCodecContext *audio_enc_ctx;      // ä¿å­˜éŸ³é¢‘ç¼–ç å™¨
     AVOutputFormat *m_ofmt;
-    pthread_mutex_t record_mutex;       // Ëø
-    int is_record;                      // ÊÇ·ñÔÚÂ¼ÖÆ
+    pthread_mutex_t record_mutex;       // é”
+    int is_record;                      // æ˜¯å¦åœ¨å½•åˆ¶
     int record_error;
 
-    bool is_video_first;                  // ÊÇ·ñÊÓÆµµÚÒ»Ö¡Êı¾İ
-    bool is_audio_first;                  // ÊÇ·ñÒôÆµµÚÒ»Ö¡Êı¾İ
-    int64_t start_video_pts;              // ¿ªÊ¼Â¼ÖÆÊÓÆµpts
-    int64_t start_video_dts;              // ¿ªÊ¼Â¼ÖÆÊÓÆµdts
-    int64_t start_audio_pts;              // ¿ªÊ¼Â¼ÖÆÒôÆµpts
-    int64_t start_audio_dts;              // ¿ªÊ¼Â¼ÖÆÒôÆµdts
-    int64_t last_video_pts;               // ¼ÇÂ¼ÉÏÒ»Ö¡µÄÊÓÆµÖ¡pts
-    int64_t last_video_dts;               // ¼ÇÂ¼ÉÏÒ»Ö¡µÄÊÓÆµÖ¡dts
-    int64_t last_audio_pts;               // ¼ÇÂ¼ÉÏÒ»Ö¡µÄÒôÆµÖ¡pts
-    int64_t last_audio_dts;               // ¼ÇÂ¼ÉÏÒ»Ö¡µÄÒôÆµÖ¡dts
+    bool is_video_first;                  // æ˜¯å¦è§†é¢‘ç¬¬ä¸€å¸§æ•°æ®
+    bool is_audio_first;                  // æ˜¯å¦éŸ³é¢‘ç¬¬ä¸€å¸§æ•°æ®
+    int64_t start_video_pts;              // å¼€å§‹å½•åˆ¶è§†é¢‘pts
+    int64_t start_video_dts;              // å¼€å§‹å½•åˆ¶è§†é¢‘dts
+    int64_t start_audio_pts;              // å¼€å§‹å½•åˆ¶éŸ³é¢‘pts
+    int64_t start_audio_dts;              // å¼€å§‹å½•åˆ¶éŸ³é¢‘dts
+    int64_t last_video_pts;               // è®°å½•ä¸Šä¸€å¸§çš„è§†é¢‘å¸§pts
+    int64_t last_video_dts;               // è®°å½•ä¸Šä¸€å¸§çš„è§†é¢‘å¸§dts
+    int64_t last_audio_pts;               // è®°å½•ä¸Šä¸€å¸§çš„éŸ³é¢‘å¸§pts
+    int64_t last_audio_dts;               // è®°å½•ä¸Šä¸€å¸§çš„éŸ³é¢‘å¸§dts
 
     int video_index;
     int audio_index;
@@ -592,9 +592,9 @@ typedef struct FFPlayer {
     int audio_out_index;
     int record_count;
 
-    int64_t *base_pts;    // ¸÷Á÷»ù×¼PTS
-    int64_t *base_dts;    // ¸÷Á÷»ù×¼DTS
-    int64_t *last_dts;    // ¸÷Á÷×îºóDTS¼ÇÂ¼
+    int64_t *base_pts;    // å„æµåŸºå‡†PTS
+    int64_t *base_dts;    // å„æµåŸºå‡†DTS
+    int64_t *last_dts;    // å„æµæœ€åDTSè®°å½•
 
     AVFormatContext* formatContext;
     AVFormatContext* outputContext;
