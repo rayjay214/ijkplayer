@@ -121,6 +121,14 @@ int       ffp_start_record(FFPlayer *ffp, const char *file_name);
 int       ffp_stop_record(FFPlayer *ffp);
 int       ffp_record_file(FFPlayer *ffp, AVPacket *packet);
 int       ffp_is_record(FFPlayer *ffp);
+//webrtc ns
+void      ffp_ns_free(FFPlayer *ffp);
+int       ffp_ns_init(FFPlayer *ffp, int sample_rate, int channels);
+int       ffp_ns_process(FFPlayer *ffp, int16_t *audio_buf, int size, int channels, int sample_rate);
+
+
+
+
 
 // must be freed with free();
 struct IjkMediaMeta *ffp_get_meta_l(FFPlayer *ffp);

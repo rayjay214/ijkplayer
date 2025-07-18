@@ -66,6 +66,9 @@
 #include "ff_ffpipenode.h"
 #include "ijkmeta.h"
 
+#include "ns/noise_suppression.h"
+
+
 #define DEFAULT_HIGH_WATER_MARK_IN_BYTES        (256 * 1024)
 
 /*
@@ -765,6 +768,15 @@ typedef struct FFPlayer {
     int cover_after_prepared;
     int vout_type;
     int aout_type;
+
+	// WebRTC降噪相关字段
+    int ns_enabled;           // 是否启用降噪
+    int ns_level;             // 降噪级别：0-低，1-中，2-高，3-很高
+    NsHandle **ns_handles;    // WebRTC降噪处理句柄数组（每个声道一个）
+    int ns_channels;          // 当前处理的声道数
+    int ns_sample_rate;       // 当前处理的采样率
+    int16_t *ns_buf;          // 降噪处理缓冲区
+    int ns_buf_size;          // 降噪处理缓冲区大小
 } FFPlayer;
 
 #define fftime_to_milliseconds(ts) (av_rescale(ts, 1000, AV_TIME_BASE))

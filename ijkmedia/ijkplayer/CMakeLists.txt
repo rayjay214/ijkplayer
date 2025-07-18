@@ -75,6 +75,9 @@ set(BUILD_SOURCES
     ijkavutil/ijktree.c
     ijkavutil/ijkfifo.c
     ijkavutil/ijkstl.cpp
+
+    ns/noise_suppression.c
+    ns/nsutil.cpp
 )
 
 if(WIN32)

@@ -82,6 +82,8 @@
 #include "ijkversion.h"
 #include "ijkplayer.h"
 
+#include "ns/noise_suppression.h"
+
 #ifndef WIN32
 #include <stdatomic.h>
 #endif
@@ -2014,12 +2016,128 @@ end:
 }
 #endif  /* CONFIG_AVFILTER */
 
+int ffp_ns_init(FFPlayer *ffp, int sample_rate, int channels) {
+    if (!ffp->ns_enabled || !sample_rate || !channels)
+        return -1;
+    
+    // 释放旧的资源
+    ffp_ns_free(ffp);
+    
+    // 为每个声道创建降噪处理句柄
+    ffp->ns_handles = (NsHandle **)av_mallocz(channels * sizeof(NsHandle *));
+    if (!ffp->ns_handles)
+        return AVERROR(ENOMEM);
+    
+    ffp->ns_channels = channels;
+    ffp->ns_sample_rate = sample_rate;
+    
+    for (int i = 0; i < channels; i++) {
+        ffp->ns_handles[i] = WebRtcNs_Create();
+        if (!ffp->ns_handles[i]) {
+            ffp_ns_free(ffp);
+            return AVERROR(ENOMEM);
+        }
+        
+        if (WebRtcNs_Init(ffp->ns_handles[i], sample_rate) != 0) {
+            ffp_ns_free(ffp);
+            return -1;
+        }
+        
+        if (WebRtcNs_set_policy(ffp->ns_handles[i], ffp->ns_level) != 0) {
+            ffp_ns_free(ffp);
+            return -1;
+        }
+    }
+    
+    av_log(ffp, AV_LOG_INFO, "WebRTC NS initialized: sample_rate=%d, channels=%d, level=%d\n", 
+           sample_rate, channels, ffp->ns_level);
+    return 0;
+}
+
+void ffp_ns_free(FFPlayer *ffp) {
+    if (ffp->ns_handles) {
+        for (int i = 0; i < ffp->ns_channels; i++) {
+            if (ffp->ns_handles[i]) {
+                WebRtcNs_Free(ffp->ns_handles[i]);
+                ffp->ns_handles[i] = NULL;
+            }
+        }
+        av_freep(&ffp->ns_handles);
+    }
+    
+    av_freep(&ffp->ns_buf);
+    ffp->ns_buf_size = 0;
+    ffp->ns_channels = 0;
+    ffp->ns_sample_rate = 0;
+}
+
+int ffp_ns_process(FFPlayer *ffp, int16_t *audio_buf, int size, int channels, int sample_rate) {
+	av_log(ffp, AV_LOG_INFO, "rayjay enter ns_process");
+
+    if (!ffp->ns_enabled || !audio_buf || size <= 0)
+        return size;
+    
+    // 如果采样率或声道数变化，重新初始化
+    if (ffp->ns_sample_rate != sample_rate || ffp->ns_channels != channels) {
+        if (ffp_ns_init(ffp, sample_rate, channels) != 0)
+            return size; // 初始化失败，返回原始数据
+    }
+    
+    // WebRTC NS处理10ms的音频数据
+    int samples_per_frame = sample_rate / 100; // 10ms的样本数
+    int samples = size / (2 * channels); // 总样本数（假设16位音频）
+    int frames = samples / samples_per_frame; // 可以处理的完整帧数
+    
+    if (frames == 0)
+        return size; // 数据不足一帧，直接返回
+    
+    // 确保缓冲区足够大
+    if (ffp->ns_buf_size < samples_per_frame) {
+        av_freep(&ffp->ns_buf);
+        ffp->ns_buf = (int16_t *)av_mallocz(samples_per_frame * sizeof(int16_t));
+        if (!ffp->ns_buf)
+            return size;
+        ffp->ns_buf_size = samples_per_frame;
+    }
+    
+    // 逐帧处理每个声道
+    for (int i = 0; i < frames; i++) {
+        int16_t *frame_ptr = audio_buf + i * samples_per_frame * channels;
+        
+        for (int c = 0; c < channels; c++) {
+            // 提取单声道数据
+            for (int s = 0; s < samples_per_frame; s++) {
+                ffp->ns_buf[s] = frame_ptr[s * channels + c];
+            }
+            
+            // 降噪处理
+            int16_t *ns_in[1] = {ffp->ns_buf};
+            int16_t *ns_out[1] = {ffp->ns_buf};
+            WebRtcNs_Analyze(ffp->ns_handles[c], ns_in[0]);
+            WebRtcNs_Process(ffp->ns_handles[c], (const int16_t *const *)ns_in, 1, ns_out);
+            
+            // 将处理后的数据写回原缓冲区
+            for (int s = 0; s < samples_per_frame; s++) {
+                frame_ptr[s * channels + c] = ffp->ns_buf[s];
+            }
+        }
+    }
+	av_log(ffp, AV_LOG_INFO, "rayjay finish ns_process");
+	
+    return size;
+}
+
+
 static int audio_thread(void *arg)
 {
     FFPlayer *ffp = arg;
     VideoState *is = ffp->is;
     AVFrame *frame = av_frame_alloc();
     Frame *af;
+	
+	av_log(ffp, AV_LOG_INFO, "rayjay create ns handle success");
+	av_log(ffp, AV_LOG_INFO, "rayjay 123");
+	
 #if CONFIG_AVFILTER
     int last_serial = -1;
     int64_t dec_channel_layout;
@@ -2591,6 +2709,7 @@ reload:
     }
 
     if (is->swr_ctx) {
+		av_log(NULL, AV_LOG_INFO, "rayjay enter swr_ctx");
         const uint8_t **in = (const uint8_t **)af->frame->extended_data;
         uint8_t **out = &is->audio_buf1;
         int out_count = (int)((int64_t)wanted_nb_samples * is->audio_tgt.freq / af->frame->sample_rate + 256);
@@ -2624,6 +2743,13 @@ reload:
         is->audio_buf = is->audio_buf1;
         int bytes_per_sample = av_get_bytes_per_sample(is->audio_tgt.fmt);
         resampled_data_size = len2 * is->audio_tgt.channels * bytes_per_sample;
+		av_log(NULL, AV_LOG_INFO, "rayjay format %d", is->audio_tgt.fmt);
+		if (ffp->ns_enabled && is->audio_tgt.fmt == AV_SAMPLE_FMT_S16) {
+            // 对16位PCM音频进行降噪处理
+            ffp_ns_process(ffp, (int16_t *)is->audio_buf1, resampled_data_size, is->audio_tgt.channels, is->audio_tgt.freq);
+        }
+
+		
 #if defined(__ANDROID__)
         if (ffp->soundtouch_enable && ffp->pf_playback_rate != 1.0f && !is->abort_request) {
             av_fast_malloc(&is->audio_new_buf, &is->audio_new_buf_size, out_size * translate_time);
@@ -2646,6 +2772,11 @@ reload:
     } else {
         is->audio_buf = af->frame->data[0];
         resampled_data_size = data_size;
+		//av_log(NULL, AV_LOG_INFO, "rayjay no need swr_ctx");
+		if (ffp->ns_enabled && af->frame->format == AV_SAMPLE_FMT_S16) {
+        // 对16位PCM音频进行降噪处理
+        	ffp_ns_process(ffp, (int16_t *)is->audio_buf, resampled_data_size, af->frame->channels, af->frame->sample_rate);
+    	}
     }
 
     audio_clock0 = is->audio_clock;
@@ -4077,6 +4208,14 @@ FFPlayer *ffp_create()
 
     av_opt_set_defaults(ffp);
 
+	ffp->ns_enabled = 1;
+    ffp->ns_level = 3; // 默认中等强度
+    ffp->ns_handles = NULL;
+    ffp->ns_channels = 0;
+    ffp->ns_sample_rate = 0;
+    ffp->ns_buf = NULL;
+    ffp->ns_buf_size = 0;
+
     return ffp;
 }
 
@@ -4134,7 +4273,7 @@ void ffp_destroy(FFPlayer *ffp)
     SDL_DestroyMutexP(&ffp->vf_mutex);
 
     msg_queue_destroy(&ffp->msg_queue);
-
+	ffp_ns_free(ffp);
 
     av_free(ffp);
 }
